@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workout</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Track Your Workout</h1>
+        <nav>
+            <a href="/dashboard">Dashboard</a>
+            <a href="/logout">Logout</a>
+        </nav>
+    </header>
+    <main>
+        <div class="video-container">
+            <img src="{{ url_for('video_feed') }}" alt="Live workout tracking">
+        </div>
+
+        <!-- Add a button to end the workout session -->
+        <form action="{{ url_for('end_workout') }}" method="POST">
+            <button type="submit" class="end-workout-btn">End Workout</button>
+        </form>
+    </main>
+</body>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</html>

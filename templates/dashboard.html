@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Welcome, {{ session['username'] }}!</h1>
+        <nav>
+            <a href="/workout">Start Workout</a>
+            <a href="/logout">Logout</a>
+        </nav>
+    </header>
+    <main>
+        <h2>Your Workout Logs</h2>
+        {% if workout_logs %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Reps</th>
+                        <th>Stages</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in workout_logs %}
+                        <tr>
+                            <td>{{ log.date }}</td>
+                            <td>{{ log.reps }}</td>
+                            <td>{{ log.stages }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No workout logs found. Start your first workout!</p>
+        {% endif %}
+    </main>
+</body>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</html>
