@@ -54,3 +54,15 @@ inputs.forEach(input => {
         input.style.boxShadow = 'none'; // Remove glow after input focus is lost
     });
 });
+
+document.addEventListener("DOMContentLoaded", () => {
+    const flashMessages = document.querySelectorAll(".flash-message");
+
+    // Fade out messages after 5 seconds if they haven’t faded already
+    flashMessages.forEach(message => {
+        setTimeout(() => {
+            message.style.opacity = "0";
+            message.style.transform = "translateY(-20px)";
+        }, 5000); // Message disappears after 5 seconds
+    });
+});

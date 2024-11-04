@@ -330,3 +330,38 @@ form {
     margin-top: 20px; /* Space between video and button */
 }
 
+.flash-messages {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    max-width: 400px;
+    z-index: 1000;
+}
+
+.flash-message {
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    color: white;
+    font-weight: bold;
+    text-align: center;
+    opacity: 0;
+    animation: fadeInOut 5s ease forwards; /* Automatically fades out */
+}
+
+.flash-message.success {
+    background-color: #28a745; /* Green for success */
+}
+
+.flash-message.danger {
+    background-color: #dc3545; /* Red for error */
+}
+
+@keyframes fadeInOut {
+    0% { opacity: 0; transform: translateY(-20px); }
+    10% { opacity: 1; transform: translateY(0); }
+    90% { opacity: 1; }
+    100% { opacity: 0; transform: translateY(-20px); }
+}
