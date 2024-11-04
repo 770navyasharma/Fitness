@@ -7,6 +7,9 @@ import numpy as np
 from datetime import datetime, timedelta
 import os
 import secrets
+import warnings
+warnings.filterwarnings("ignore")
+
 
 app = Flask(__name__)
 
@@ -222,6 +225,9 @@ def end_workout():
 
     if 'user_id' in session:
         user_id = session['user_id']
+        # Set a default stage if it's None
+        if stage is None:
+            stage = "N/A"  # or a relevant default value
         workout_log = WorkoutLog(
             user_id=user_id,
             date=datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
