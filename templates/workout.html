@@ -16,7 +16,24 @@
     </header>
     <main>
         <div class="video-container">
+            <!-- Display the live workout tracking feed -->
             <img src="{{ url_for('video_feed') }}" alt="Live workout tracking">
+        </div>
+
+        <!-- Display live counts for up and down reps -->
+        <div class="workout-stats">
+            <div class="stat">
+                <h3>Up Reps:</h3>
+                <p id="up-reps-count">0</p>
+            </div>
+            <div class="stat">
+                <h3>Down Reps:</h3>
+                <p id="down-reps-count">0</p>
+            </div>
+            <div class="stat">
+                <h3>Current Stage:</h3>
+                <p id="current-stage">N/A</p>
+            </div>
         </div>
 
         <!-- Add a button to end the workout session -->

@@ -17,7 +17,6 @@
     
     <!-- Flash Messages Section -->
     <main>
-        <!-- Flash Messages Display -->
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 <div class="flash-messages">
@@ -34,15 +33,21 @@
                 <thead>
                     <tr>
                         <th>Date</th>
-                        <th>Reps</th>
-                        <th>Stages</th>
+                        <th>Up Reps</th>
+                        <th>Down Reps</th>
+                        <th>Total Reps</th>
+                        <th>Duration (seconds)</th>
+                        <th>Last Stage</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for log in workout_logs %}
                         <tr>
                             <td>{{ log.date }}</td>
-                            <td>{{ log.reps }}</td>
+                            <td>{{ log.up_reps }}</td>
+                            <td>{{ log.down_reps }}</td>
+                            <td>{{ log.up_reps + log.down_reps }}</td>
+                            <td>{{ log.duration }}</td>
                             <td>{{ log.stages }}</td>
                         </tr>
                     {% endfor %}
