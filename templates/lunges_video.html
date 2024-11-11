@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lunges Workout</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f5f5f5; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        h2 { color: #333; }
+        .video-container { margin-bottom: 20px; }
+        video { width: 80%; border-radius: 10px; border: 2px solid #ddd; }
+        .input-section { margin-top: 20px; }
+        .input-section input, .input-section textarea { width: 300px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 15px; }
+        .input-section button { padding: 12px 24px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .input-section button:hover { background-color: #45a049; }
+        .buttons { margin-top: 20px; }
+        .buttons button { margin: 5px; padding: 12px 24px; border: none; cursor: pointer; background-color: #2196F3; color: white; border-radius: 5px; }
+        .buttons button:hover { background-color: #0b7dda; }
+    </style>
+</head>
+<body>
+    <h2>Record Your Lunges Workout</h2>
+    <div class="video-container">
+        <video id="videoElement" autoplay></video>
+    </div>
+    
+    <div class="input-section">
+        <input type="number" id="userWeight" placeholder="Enter weight (kg)" min="0" step="0.1">
+        <textarea id="userNotes" placeholder="Add your notes..." rows="4"></textarea>
+    </div>
+
+    <div class="buttons">
+        <button id="startRecord">Start Recording</button>
+        <button id="stopRecord" style="display: none;">Stop Recording</button>
+        <button id="uploadVideo" style="display: none;">Upload Video</button>
+        <a href="{{ url_for('dashboard') }}"><button class="back-btn">Back to Dashboard</button></a>
+    </div>
+
+    <script>
+        let mediaRecorder;
+        let recordedChunks = [];
+        const videoElement = document.getElementById('videoElement');
+        const startRecordBtn = document.getElementById('startRecord');
+        const stopRecordBtn = document.getElementById('stopRecord');
+        const uploadVideoBtn = document.getElementById('uploadVideo');
+
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                videoElement.srcObject = stream;
+                mediaRecorder = new MediaRecorder(stream);
+
+                mediaRecorder.ondataavailable = event => recordedChunks.push(event.data);
+
+                mediaRecorder.onstop = () => {
+                    const blob = new Blob(recordedChunks, { type: 'video/mp4' });
+                    uploadVideoBtn.style.display = 'block';
+
+                    uploadVideoBtn.onclick = () => {
+                        const formData = new FormData();
+                        formData.append('video', blob, 'lunges_video.mp4');
+                        formData.append('notes', document.getElementById('userNotes').value);
+                        formData.append('weight', document.getElementById('userWeight').value);
+
+                        fetch('/capture_video/lunges', {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            alert(data.status === 'success' ? 'Video uploaded and analyzed!' : 'Upload failed.');
+                        });
+                    };
+                };
+            })
+            .catch(err => console.error('Error accessing webcam:', err));
+
+        startRecordBtn.onclick = () => {
+            recordedChunks = [];
+            mediaRecorder.start();
+            startRecordBtn.style.display = 'none';
+            stopRecordBtn.style.display = 'block';
+        };
+
+        stopRecordBtn.onclick = () => {
+            mediaRecorder.stop();
+            stopRecordBtn.style.display = 'none';
+        };
+    </script>
+</body>
+</html>

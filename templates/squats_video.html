@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Squats Workout</title>
+    <style>
+        body { font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; background: #f0f0f5; }
+        .notes-section, .action-buttons { margin: 15px; }
+        .start-btn { padding: 10px 20px; margin: 5px; border: none; cursor: pointer; color: #fff; border-radius: 4px; }
+        #startRecord { background: #4CAF50; }
+        #stopRecord { background: #f44336; }
+        #uploadVideo { background: #008CBA; }
+        video { width: 70%; border-radius: 8px; }
+        /* Style for notes section */
+        .notes-section {
+            margin-bottom: 20px;
+        }
+
+        .notes-section label {
+            display: block;
+            font-size: 1rem;
+            color: #4b4b4b;
+            margin-bottom: 5px;
+        }
+
+        .notes-section textarea {
+            width: 100%;
+            padding: 10px;
+            font-size: 1rem;
+            border: 2px solid #c6c6c6;
+            border-radius: 8px;
+            background-color: #fff;
+            box-sizing: border-box;
+            transition: border-color 0.3s ease;
+        }
+
+        .notes-section textarea:focus {
+            border-color: #5a9bff;
+            outline: none;
+        }
+
+        /* Style for weight input field */
+        .weight-section {
+            margin-bottom: 20px;
+        }
+
+        .weight-section label {
+            display: block;
+            font-size: 1rem;
+            color: #4b4b4b;
+            margin-bottom: 5px;
+        }
+
+        .weight-section input {
+            width: 100%;
+            padding: 10px;
+            font-size: 1rem;
+            border: 2px solid #c6c6c6;
+            border-radius: 8px;
+            background-color: #fff;
+            box-sizing: border-box;
+            transition: border-color 0.3s ease;
+        }
+
+        .weight-section input:focus {
+            border-color: #5a9bff;
+            outline: none;
+        }
+
+        /* Responsive design adjustments */
+        @media (max-width: 600px) {
+            .notes-section textarea, .weight-section input {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h2>Record Your Squats Workout</h2>
+    <video id="videoElement" autoplay></video>
+    
+    <div class="weight-section">
+        <label for="userWeight">Weight (kg):</label>
+        <input type="number" id="userWeight" placeholder="Enter weight" min="0" step="0.1">
+    </div>
+    <div class="notes-section">
+        <label for="userNotes">Notes:</label>
+        <textarea id="userNotes" rows="4" placeholder="Add notes here..."></textarea>
+    </div>
+
+    <div class="action-buttons">
+        <button id="startRecord" class="start-btn">Start Recording</button>
+        <button id="stopRecord" class="start-btn" style="display: none;">Stop Recording</button>
+        <button id="uploadVideo" class="start-btn" style="display: none;">Upload Video</button>
+        <a href="{{ url_for('dashboard') }}"><button class="back-btn">Back to Dashboard</button></a>
+    </div>
+
+    <script>
+        let mediaRecorder;
+        let recordedChunks = [];
+        const videoElement = document.getElementById('videoElement');
+        const startRecordBtn = document.getElementById('startRecord');
+        const stopRecordBtn = document.getElementById('stopRecord');
+        const uploadVideoBtn = document.getElementById('uploadVideo');
+
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                videoElement.srcObject = stream;
+                mediaRecorder = new MediaRecorder(stream);
+
+                mediaRecorder.ondataavailable = event => recordedChunks.push(event.data);
+
+                mediaRecorder.onstop = () => {
+                    const blob = new Blob(recordedChunks, { type: 'video/mp4' });
+                    uploadVideoBtn.style.display = 'block';
+                    
+                    uploadVideoBtn.onclick = () => {
+                        const formData = new FormData();
+                        formData.append('video', blob, 'squats_video.mp4');
+                        formData.append('notes', document.getElementById('userNotes').value);
+                        formData.append('weight', document.getElementById('userWeight').value);
+
+                        fetch('/capture_video/squats', {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            alert(data.status === 'success' ? 'Video uploaded and analyzed!' : 'Upload failed.');
+                        });
+                    };
+                };
+            })
+            .catch(err => console.error('Error accessing webcam:', err));
+
+        startRecordBtn.onclick = () => {
+            recordedChunks = [];
+            mediaRecorder.start();
+            startRecordBtn.style.display = 'none';
+            stopRecordBtn.style.display = 'block';
+        };
+
+        stopRecordBtn.onclick = () => {
+            mediaRecorder.stop();
+            stopRecordBtn.style.display = 'none';
+        };
+    </script>
+</body>
+</html>
