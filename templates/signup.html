@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/signup.css') }}">
 </head>
 <body>
     <header>
-        <h1>Sign Up for Fitness Tracker</h1>
+        <h1>Sign Up to Fitness Tracker</h1>
     </header>
 
     <!-- Flash Messages Section -->
@@ -23,30 +23,32 @@
     </div>
 
     <main>
-        <form action="/signup" method="POST">
-            <label for="username">Username:</label>
-            <input type="text" name="username" id="username" required>
+        <div class="form-container">
+            <form action="/signup" method="POST">
+                <label for="username">Username:</label>
+                <input type="text" name="username" id="username" required>
 
-            <label for="email">Email:</label>  <!-- New email input field -->
-            <input type="email" name="email" id="email" required>
+                <label for="email">Email:</label>
+                <input type="email" name="email" id="email" required>
 
-            <label for="password">Password:</label>
-            <input type="password" name="password" id="password" required>
+                <label for="password">Password:</label>
+                <input type="password" name="password" id="password" required>
 
-            <label for="age">Age:</label>
-            <input type="number" name="age" id="age" required>
+                <label for="age">Age:</label>
+                <input type="number" name="age" id="age" required>
 
-            <label for="gender">Gender:</label>
-            <select name="gender" id="gender">
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Other</option>
-            </select>
+                <label for="gender">Gender:</label>
+                <select name="gender" id="gender">
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                </select>
 
-            <button type="submit">Sign Up</button>
-        </form>
+                <button type="submit">Sign Up</button>
+            </form>
+        </div>
         <p>Already have an account? <a href="/login">Login here</a>.</p>
     </main>
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    
 </body>
 </html>
