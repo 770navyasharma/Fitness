@@ -331,6 +331,60 @@ def analyze_lunges_video(video_path, user_notes, weight):
     cap.release()
     return reps, sets, duration, weight, calories_burned, rest_period, stance, form_notes
 
+def analyze_pullups_video(video_path, user_notes):
+    mp_pose = mp.solutions.pose
+    pose = mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5)
+    cap = cv2.VideoCapture(video_path)
+    
+    form_notes = f"{user_notes}; "
+
+    reps = 0
+    sets = 1
+    duration = 0
+    difficulty = "Moderate"  # Default difficulty level
+    calories_burned = 0.0
+    rest_period = 0
+    grip_type = "Neutral"  # Default grip type
+    in_pull = False
+    start_time = datetime.now()
+    end_time = None
+    last_pull_time = datetime.now()
+
+    while cap.isOpened():
+        ret, frame = cap.read()
+        if not ret:
+            break
+
+        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        results = pose.process(frame_rgb)
+
+        if results.pose_landmarks:
+            left_wrist = results.pose_landmarks.landmark[mp_pose.PoseLandmark.LEFT_WRIST]
+            left_elbow = results.pose_landmarks.landmark[mp_pose.PoseLandmark.LEFT_ELBOW]
+            left_shoulder = results.pose_landmarks.landmark[mp_pose.PoseLandmark.LEFT_SHOULDER]
+
+            # Detect pull-up movement
+            if left_wrist.y < left_elbow.y < left_shoulder.y:
+                if not in_pull:
+                    reps += 1
+                    in_pull = True
+                    last_pull_time = datetime.now()
+            else:
+                in_pull = False
+
+            # Calculate rest period
+            if reps > 0 and (datetime.now() - last_pull_time).seconds > 10:
+                rest_period = (datetime.now() - last_pull_time).seconds
+
+        end_time = datetime.now()
+
+    duration = (end_time - start_time).seconds if end_time and start_time else 0
+    calories_burned = reps * 0.12  # Adjusted for pull-ups
+
+    cap.release()
+    return reps, sets, duration, difficulty, calories_burned, rest_period, grip_type, form_notes
+
+
 # Hash password
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
@@ -577,6 +631,32 @@ def capture_lunges_video():
 
     return jsonify({"status": "success", "message": "Video analyzed and data saved successfully!"})
 
+@app.route('/capture_video/pullups', methods=['POST'])
+def capture_pullups_video():
+    video_file = request.files['video']
+    user_notes = request.form.get('notes', '')
+    video_path = 'captured_videos/pullups_video.mp4'
+    os.makedirs('captured_videos', exist_ok=True)
+    video_file.save(video_path)
+
+    reps, sets, duration, difficulty, calories_burned, rest_period, grip_type, form_notes = analyze_pullups_video(video_path, user_notes)
+    new_pullups_log = PullUpsLog(
+        user_id=session['user_id'],
+        date=datetime.now(),
+        reps=reps,
+        sets=sets,
+        duration=duration,
+        difficulty=difficulty,
+        rest_period=rest_period,
+        calories_burned=calories_burned,
+        grip_type=grip_type,
+        form_notes=form_notes
+    )
+    
+    db.session.add(new_pullups_log)
+    db.session.commit()
+
+    return jsonify({"status": "success", "message": "Video analyzed and data saved successfully!"})
 
 @app.route('/about')
 def about():

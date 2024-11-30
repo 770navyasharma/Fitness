@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pullups Video Capture</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        /* Your existing styles */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #3c8d99;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .video-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 50px;
+        }
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .start-btn, .back-btn {
+            background-color: #3c8d99;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            width: 10rem;
+            transition: background-color 0.3s;
+        }
+        .start-btn:hover, .back-btn:hover {
+            background-color: #2a6d75;
+        }
+        video {
+            width: 80%;
+            max-width: 800px;
+            border-radius: 8px;
+        }
+        .notes-section {
+            margin: 20px auto;
+            width: 80%;
+            max-width: 600px;
+        }
+        .notes-section label {
+            font-size: 16px;
+            color: #333;
+        }
+        .notes-section textarea {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            resize: vertical;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Pullups Video Capture</h1>
+    </header>
+
+    <div class="video-container">
+        <video id="videoElement" autoplay></video>
+    </div>
+
+    <div class="notes-section">
+        <label for="userNotes">Notes:</label>
+        <textarea id="userNotes" rows="5" placeholder="Enter any additional notes here..."></textarea>
+    </div>
+
+    <div class="action-buttons">
+        <button id="startRecord" class="start-btn">Start Recording</button>
+        <button id="stopRecord" class="start-btn" style="display: none;">Stop Recording</button>
+        <button id="uploadVideo" class="start-btn" style="display: none;">Upload Video</button>
+        <a href="{{ url_for('dashboard') }}">
+            <button class="back-btn">Back to Dashboard</button>
+        </a>
+    </div>
+
+    <script>
+        let mediaRecorder;
+        let recordedChunks = [];
+        let videoElement = document.getElementById('videoElement');
+        let startRecordBtn = document.getElementById('startRecord');
+        let stopRecordBtn = document.getElementById('stopRecord');
+        let uploadVideoBtn = document.getElementById('uploadVideo');
+
+        // Get access to webcam
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                videoElement.srcObject = stream;
+                mediaRecorder = new MediaRecorder(stream);
+                
+                mediaRecorder.ondataavailable = function(event) {
+                    recordedChunks.push(event.data);
+                };
+                
+                mediaRecorder.onstop = function() {
+                    let blob = new Blob(recordedChunks, { type: 'video/mp4' });
+                    uploadVideoBtn.style.display = 'block';
+
+                    uploadVideoBtn.onclick = function() {
+                        let formData = new FormData();
+                        formData.append('video', blob, 'exercise_video.mp4');
+
+                        // Append user notes to form data
+                        let userNotes = document.getElementById('userNotes').value;
+                        formData.append('notes', userNotes);
+                        fetch('/capture_video/pullups', {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 'success') {
+                                alert('Video uploaded and analyzed successfully!');
+                            } else {
+                                alert('Video upload failed.');
+                            }
+                        });
+                    };
+                };
+            })
+            .catch(err => {
+                console.error('Error accessing webcam:', err);
+            });
+
+        startRecordBtn.onclick = function() {
+            recordedChunks = [];
+            mediaRecorder.start();
+            startRecordBtn.style.display = 'none';
+            stopRecordBtn.style.display = 'block';
+        };
+
+        stopRecordBtn.onclick = function() {
+            mediaRecorder.stop();
+            stopRecordBtn.style.display = 'none';
+        };
+    </script>
+</body>
+</html>
