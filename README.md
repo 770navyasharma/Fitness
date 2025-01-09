@@ -16,7 +16,6 @@ The **Fitness Tracker System** is a web application designed to analyze exercise
 ---
 
 ## 📂 Project Structure
-## 📂 Project Structure
 ```yaml
 📦 Fitness Tracker System
 ├── 📂 app
